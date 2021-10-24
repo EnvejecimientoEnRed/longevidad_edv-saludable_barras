@@ -16,15 +16,9 @@ let dataSources = [
 let tooltip = d3.select('#tooltip');
 
 let ineData = [], echoData = [], renteriaData = [];
-let chartBlock = d3.select('#chart'), chart, xChart, xAxisChart, yChart, yAxisChart;
+let chartMenBlock = d3.select('#chartMen'), chartMen, xChartMen, xAxisChartMen, yChartMen, yAxisChartMen;
+let chartWomenBlock = d3.select('#chartWomen'), chartWomen, xChartWomen, xAxisChartWomen, yChartWomen, yAxisChartWomen;
 let colors = ['','','',''];
-
-//Variables para visualización
-// let innerData = [], currentData = [], ccaaFirstData = [], ccaaSecondData = [],
-//     chartBlock = d3.select('#chart'), chart, x_c, x_cAxis, y_c, y_cAxis;
-// let line, path_1, length_1, path_2, length_2;
-// let enr_color_1 = '#296565', circle_color_1 = '#9E9E9E';
-// let enr_color_2 = '#e46b4f', circle_color_2 = '#5E5E5E';
 
 initChart();
 
@@ -42,8 +36,6 @@ function initChart() {
         ineData = csv.parse(ine);
         echoData = csv.parse(echo);
         renteriaData = csv.parse(renteria);
-
-        console.log(ineData);
     });
     
     // d3.text(dataSource, function (error, d) {
@@ -213,197 +205,8 @@ function initChart() {
     // });
 }
 
-function updateChart(ccaa) {
-    //Filtrar los datos para quedarse únicamente con los que nos interesan > CCAA
-    let ccaaData = innerData.filter(function(item) {
-        if ((item.ccaa_searchable == ccaa || item.ccaa_searchable == ccaa2) && (item.ex_65 != 0)) {
-            return item;
-        }
-    });
+function updateChart(tipo) {
 
-    currentData = ccaaData;
-
-    ccaaFirstData = currentData.filter(function(item) {
-        if (item.ccaa_searchable == ccaa) {
-            return item;
-        }
-    });
-
-    if(ccaa2 != 'null') {
-        ccaaSecondData = currentData.filter(function(item) {
-            if (item.ccaa_searchable == ccaa2) {
-                return item;
-            }
-        });
-    } else {
-        ccaaSecondData = [];
-    }
-
-    animateChart();
-}
-
-function animateChart() {
-    //Opción de tener dos líneas
-    path_1 = chart.select(".line-chart_1")
-        .data([ccaaFirstData])
-        .attr("class", 'line-chart_1')
-        .attr("fill", "none")
-        .attr("stroke", '' + enr_color_1 + '')
-        .attr("stroke-width", '1.5px')
-        .attr("d", line);
-
-    length_1 = path_1.node().getTotalLength();
-
-    path_1.attr("stroke-dasharray", length_1 + " " + length_1)
-        .attr("stroke-dashoffset", length_1)
-        .transition()
-        .ease(d3.easeLinear)
-        .attr("stroke-dashoffset", 0)
-        .duration(3000);
-
-    chart
-        .selectAll('.circle-chart_2_1')
-        .remove();
-
-    chart.selectAll('circles')
-        .data(ccaaFirstData)
-        .enter()
-        .append('circle')
-        .attr('class', 'circle-chart_2_1')  
-        .attr("r", function(d,i){
-            if(i == 0 || i == ccaaFirstData.length -1) {
-                return '5'
-            } else {
-                return '2.5';
-            }
-        })
-        .attr("cx", function(d) { return x_c(d.ex_65); })
-        .attr("cy", function(d) { return y_c(d.ex_80); })
-        .style("fill", function(d,i) {
-            if(i == 0) {
-                return '' + circle_color_1 + '';
-            } else if (i == ccaaFirstData.length - 1) {
-                return '' + circle_color_2 + '';
-            } else {
-                return '#fff';
-            }
-        })
-        .style("stroke", function(d,i) {
-            if(i == 0 || i == ccaaFirstData.length -1) {
-                return 'none'
-            } else {
-                return '' + enr_color_1 + '';
-            }
-        })
-        .style("stroke-width", function(d,i) {
-            if(i == 0 || i == ccaaFirstData.length - 1) {
-                return '0'
-            } else {
-                return '0.5';
-            }
-        })
-        .style('opacity', '0')
-        .on('mouseenter mousedown mousemove mouseover', function(d, i, e) {                
-            //Texto
-            let html = '<p class="chart__tooltip--title">' + d.ccaa + ' (' + d.anio + ')</p>' + '<p class="chart__tooltip--text">Esperanza de vida a los 65-69 años:' + numberWithCommas(d.ex_65.toFixed(1)) + ' años</p>' + '<p class="chart__tooltip--text">Esperanza de vida a los 80-84 años:' + numberWithCommas(d.ex_80.toFixed(1)) + '</p>';
-
-            tooltip.html(html);
-
-            //Tooltip
-            positionTooltip(window.event, tooltip);
-            getInTooltip(tooltip);               
-        })
-        .on('mouseout', function(d, i, e) {
-            //Quitamos el tooltip
-            getOutTooltip(tooltip);                
-        })
-        .transition()
-        .delay(function(d,i) { return i * (3000 / ccaaFirstData.length )})
-        .style('opacity', '1');
-    
-    if(!path_2) {
-        initSecondPath(ccaaSecondData);
-    } else {
-        path_2 = chart.select(".line-chart_2")
-            .data([ccaaSecondData])
-            .attr("class", 'line-chart_2')
-            .attr("fill", "none")
-            .attr("stroke", '' + enr_color_2 + '')
-            .attr("stroke-width", '1.5px')
-            .attr("d", line);
-
-        length_2 = path_2.node().getTotalLength();
-
-        path_2.attr("stroke-dasharray", length_2 + " " + length_2)
-            .attr("stroke-dashoffset", length_2)
-            .transition()
-            .ease(d3.easeLinear)
-            .attr("stroke-dashoffset", 0)
-            .duration(3000);
-
-        chart
-            .selectAll('.circle-chart_2_2')
-            .remove();
-        
-        chart.selectAll('circles')
-            .data(ccaaSecondData)
-            .enter()
-            .append('circle')
-            .attr('class', 'circle-chart_2_2')        
-            .attr("r", function(d,i){
-                if(i == 0 || i == ccaaSecondData.length -1) {
-                    return '5'
-                } else {
-                    return '2.5';
-                }
-            })
-            .attr("cx", function(d) { return x_c(d.ex_65); })
-            .attr("cy", function(d) { return y_c(d.ex_80); })
-            .style("fill", function(d,i) { 
-                if(i == 0) {
-                    return '' + circle_color_1 + '';
-                } else if (i == ccaaSecondData.length - 1) {
-                    return '' + circle_color_2 + '';
-                } else {
-                    return '#fff';
-                }
-            })
-            .style("stroke", function(d,i) {
-                if(i == 0 || i == ccaaSecondData.length - 1) {
-                    return 'none'
-                } else {
-                    return '' + enr_color_2 + '';
-                }
-            })
-            .style("stroke-width", function(d,i) {
-                if(i == 0 || i == ccaaSecondData.length - 1) {
-                    return '0'
-                } else {
-                    return '0.5';
-                }
-            })
-            .style('opacity', '0')
-            .on('mouseenter mousedown mousemove mouseover', function(d, i, e) {                
-                //Texto
-                let html = '<p class="chart__tooltip--title">' + d.ccaa + ' (' + d.anio + ')</p>' + '<p class="chart__tooltip--text">Esperanza de vida a los 65-69 años:' + numberWithCommas(d.ex_65.toFixed(1)) + ' años</p>' + '<p class="chart__tooltip--text">Esperanza de vida a los 80-84 años:' + numberWithCommas(d.ex_80.toFixed(1)) + '</p>';
-
-                tooltip.html(html);
-
-                //Tooltip
-                positionTooltip(window.event, tooltip);
-                getInTooltip(tooltip);               
-            })
-            .on('mouseout', function(d, i, e) {
-                //Quitamos el tooltip
-                getOutTooltip(tooltip);                
-            })
-            .transition()
-            .delay(function(d,i) { return i * (3000 / ccaaSecondData.length )})
-            .style('opacity', '1');        
-    }
-    setTimeout(() => {
-        setChartCanvas(); 
-    }, 4000);
 }
 
 document.getElementById('replay').addEventListener('click', function() {
@@ -427,10 +230,10 @@ function getIframeParams() {
 ///Si viene desde iframe con altura fija, ejecutamos esta función. Si no, los altos son dinámicos a través de PYMJS
 function setChartHeight(iframe_fijo) {
     if(iframe_fijo) {
-        //El contenedor y el main reciben una altura fija. En este caso, 688 y 656
+        //El contenedor y el main reciben una altura fija
         //La altura del gráfico se ajusta más a lo disponible en el main, quitando títulos, lógica, ejes y pie de gráfico
-        document.getElementsByClassName('container')[0].style.height = '680px';
-        document.getElementsByClassName('main')[0].style.height = '648px';
+        document.getElementsByClassName('container')[0].style.height = '612px';
+        document.getElementsByClassName('main')[0].style.height = '580px';
 
         let titleBlock = document.getElementsByClassName('b-title')[0].clientHeight;
         let logicBlock = document.getElementsByClassName('chart__logics')[0].clientHeight;
@@ -439,7 +242,7 @@ function setChartHeight(iframe_fijo) {
 
         //Comprobar previamente la altura que le demos al MAIN. El estado base es 588 pero podemos hacerlo más o menos alto en función de nuestros intereses
 
-        let height = 598; //Altura total del main | Cambiar cuando sea necesario > Quitar aquí los ejes: 35 + 27 > 62
+        let height = 580; //Altura total del main
         document.getElementsByClassName('chart__viz')[0].style.height = height - titleBlock - logicBlock - footerBlock - footerTop - containerPadding - marginTitle - marginLogics + 'px';
     } else {
         document.getElementsByClassName('main')[0].style.height = document.getElementsByClassName('main')[0].clientHeight + 'px';

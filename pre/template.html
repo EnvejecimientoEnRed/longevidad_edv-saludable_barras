@@ -18,17 +18,18 @@
             <section class="content b-chart active" id="chartBlock">
                 <div class="b-title">
                     <h1 class="title">Comparación de fuentes sobre esperanza de vida y esperanza de vida saludable en España</h1>
-                    <h2 class="subtitle">Datos entre 2018 y 2019. Datos en unidades (años). Nivel nacional.</h2>
+                    <h2 class="subtitle">Datos entre 2008 y 2019. Datos en unidades (años). Nivel nacional.</h2>
                 </div>
                 <div class="chart__logics">
                     <div class="chart__options">
                         <div class="chart__options--filter">
                             <div class="b-custom-select">
-                                <div class="custom-select" style="width:200px;">
+                                <div class="custom-select" style="width:180px;">
                                     <select>
-                                      <option value="0">INE</option>
-                                      <option value="ine_tipo">INE</option>
-                                      <option value="echo_tipo">Proyecto ECHO</option>
+                                      <option value="0">INE/EUROSTAT</option>
+                                      <option value="ine_tipo">INE/EUROSTAT</option>
+                                      <option value="echo-dfle_tipo">Proyecto ECHO - Discapacidad</option>
+                                      <option value="echo-chrdfle_tipo">Proyecto ECHO - Enfermedades crónicas</option>
                                       <option value="renteria_tipo">Paper Rentería y Zueras</option>
                                     </select>
                                </div>
@@ -41,8 +42,21 @@
                             </button>
                         </div>
                     </div>
+                    <div class="chart__legend">
+                        <span class="chart__legend--item first">Con enfermedades</span>
+                        <span class="chart__legend--item second">Sin enfermedades</span>
+                    </div>
                 </div>
-                <div class="chart__viz" id="chart"></div>
+                <div class="chart__viz">
+                    <div class="chart__viz-first">
+                        <p>Hombres</p>
+                        <div class="chart" id="chartMen"></div>
+                    </div>
+                    <div class="chart__viz-second">
+                        <p>Mujeres</p>
+                        <div class="chart" id="chartWomen"></div>
+                    </div>
+                </div>
                 <!-- Pie de gráfico -->
                 <div class="chart__footer">
                     <div class="chart__source">

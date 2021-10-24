@@ -231,7 +231,6 @@ body, button {
                     transform: translateY(-50%);
                     width: 15px;
                     height: 15px;
-                    border-radius: 50%;
                     background-color: #ccc; /* Este es el atributo a modificar */
                 }
 
@@ -247,7 +246,26 @@ body, button {
 
         //Visualización
         &__viz {
-            height: 420px;
+            height: 340px;
+            margin-top: 12px;
+
+            display: flex;
+            flex-direction: row;
+
+            & div {
+                width: 50%;
+
+                & p {
+                    margin-bottom: 6px;
+
+                    font-size: 0.9rem;
+                }
+
+                & .chart {
+                    width: 100%;
+                    height: 100%;
+                }
+            }
 
             & .tick text {
                 font-family: 'Titillium Web';
@@ -267,19 +285,6 @@ body, button {
             & .line-special {
                 stroke: #000 !important;
                 stroke-width: 0.5px !important;
-            }
-        }
-
-        &--special-axis {
-            &.axis-y {
-                margin: 12px 0px 4px 0px;
-                font-size: 0.85em;
-            }
-
-            &.axis-x {
-                margin: 4px 0px 8px 0px;
-                font-size: 0.85em;
-                text-align: center;
             }
         }
 
@@ -523,5 +528,20 @@ body, button {
 @media screen and (max-width: 475px) {
     body {
         font-size: 14.5px;
+    }
+}
+
+@media screen and (max-width: 460px) {
+    .b-chart {
+        .chart {
+            &__viz {
+                display: block;
+
+                & div {
+                    width: 100%;
+                    height: 170px;
+                }
+            }
+        }
     }
 }
