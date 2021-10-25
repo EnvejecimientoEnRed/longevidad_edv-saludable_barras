@@ -140,6 +140,7 @@ function updateChart(tipo) {
             break;
         case 'renteria-ced':
             currentData = renteriaCedData.slice();
+            break;
         default:
             currentData = ineData.slice();
             break;
@@ -228,15 +229,44 @@ function menChart(data) {
         .data(function(d) { return d; })
         .enter()
         .append("rect")
-        .attr('class', function(d) { return 'hombres-' + d.data.anio; })
+        .attr('class', function(d) { return 'bar hombres-' + d.data.anio; })
         .attr("x", function(d) { return xChartMen(d.data.anio) + xChartMen.bandwidth() / 4; })
         .attr("y", function(d) { return yChartMen(0); })
         .attr("width", xChartMen.bandwidth() / 2)
-        .on('mouseover', function(d) {
-            console.log(d);
+        .on('mouseover', function(d, i, e) {
+            let total = d.data.hombres_saludable + d.data.hombres_no_saludable;
+
+            let html = `<p class="chart__tooltip--title">${d.data.anio}</p>
+                <p class="chart__tooltip--text">EdV total: ${total.toFixed(1).replace('.',',')} años</p>
+                <p class="chart__tooltip--text">EdV en buena salud: ${d.data.hombres_saludable.toFixed(1).replace('.',',')} años</p>
+                <p class="chart__tooltip--text">EdV en mala salud: ${d.data.hombres_no_saludable.toFixed(1).replace('.',',')} años</p>`;
+
+            tooltip.html(html);
+
+            //Posibilidad visualización línea diferente
+            let bars = d3.selectAll('.bar');
+            let css = e[i].getAttribute('class').split(' ')[1];
+
+            bars.each(function() {
+                this.style.opacity = '0.4';
+                if(this.getAttribute('class').indexOf(`${css}`) != -1) {
+                    this.style.opacity = '1';
+                }
+            });
+
+            //Tooltip
+            positionTooltip(window.event, tooltip);
+            getInTooltip(tooltip);
         })
         .on('mouseout', function(d) {
+            //Quitamos los estilos de la línea
+            let bars = d3.selectAll('.bar');
+            bars.each(function() {
+                this.style.opacity = '1';
+            });
 
+            //Quitamos el tooltip
+            getOutTooltip(tooltip); 
         })
         .transition()
         .duration(1500)
@@ -309,15 +339,45 @@ function womenChart(data) {
         .data(function(d) { return d; })
         .enter()
         .append("rect")
-        .attr('class', function(d) { return 'mujeres-' + d.data.anio; })
+        .attr('class', function(d) { return 'bar mujeres-' + d.data.anio; })
         .attr("x", function(d) { return xChartWomen(d.data.anio) + xChartWomen.bandwidth() / 4; })
         .attr("y", function(d) { return yChartWomen(0); })
         .attr("width", xChartWomen.bandwidth() / 2)
-        .on('mouseover', function(d) {
+        .on('mouseover', function(d, i, e) {
+            //Texto
+            let total = d.data.mujeres_saludable + d.data.mujeres_no_saludable;
 
+            let html = `<p class="chart__tooltip--title">${d.data.anio}</p>
+                <p class="chart__tooltip--text">EdV total: ${total.toFixed(1).replace('.',',')} años</p>
+                <p class="chart__tooltip--text">EdV en buena salud: ${d.data.mujeres_saludable.toFixed(1).replace('.',',')} años</p>
+                <p class="chart__tooltip--text">EdV en mala salud: ${d.data.mujeres_no_saludable.toFixed(1).replace('.',',')} años</p>`;
+
+            tooltip.html(html);
+
+            //Posibilidad visualización línea diferente
+            let bars = d3.selectAll('.bar');
+            let css = e[i].getAttribute('class').split(' ')[1];
+
+            bars.each(function() {
+                this.style.opacity = '0.4';
+                if(this.getAttribute('class').indexOf(`${css}`) != -1) {
+                    this.style.opacity = '1';
+                }
+            });
+
+            //Tooltip
+            positionTooltip(window.event, tooltip);
+            getInTooltip(tooltip);
         })
         .on('mouseout', function(d) {
+            //Quitamos los estilos de la línea
+            let bars = d3.selectAll('.bar');
+            bars.each(function() {
+                this.style.opacity = '1';
+            });
 
+            //Quitamos el tooltip
+            getOutTooltip(tooltip); 
         })
         .transition()
         .duration(1500)
