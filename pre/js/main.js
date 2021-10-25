@@ -12,10 +12,12 @@ import '../css/main.scss';
 let dataSources = [
     'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/edv_saludable/main/data/ine_data.csv', 
     'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/edv_saludable/main/data/echo_data.csv', 
-    'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/edv_saludable/main/data/renteria_data.csv'];
+    'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/edv_saludable/main/data/renteria_data.csv',
+    'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/edv_saludable/main/data/renteria-ced_data.csv'
+];
 let tooltip = d3.select('#tooltip');
 
-let ineData = [], echoData = [], echoDfleData = [], echoChrdfleData = [], renteriaData = [], currentData = [];
+let ineData = [], echoData = [], echoDfleData = [], echoChrdfleData = [], renteriaData = [], renteriaCedData = [], currentData = [];
 let subgrupoHombres = ['hombres_saludable','hombres_no_saludable'];
 let subgrupoMujeres = ['mujeres_saludable','mujeres_no_saludable'];
 let chartMenBlock = d3.select('#chartMen'), chartMen, xChartMen, xAxisChartMen, yChartMen, yAxisChartMen;
@@ -32,8 +34,9 @@ function initData() {
     q.defer(d3.text, dataSources[0]);
     q.defer(d3.text, dataSources[1]);
     q.defer(d3.text, dataSources[2]);
+    q.defer(d3.text, dataSources[3]);
 
-    q.await(function(err, ine, echo, renteria) {
+    q.await(function(err, ine, echo, renteria, renteria_ced) {
         if (err) throw err;
 
         //INE
@@ -59,7 +62,19 @@ function initData() {
                 'mujeres_no_saludable' : +d.mujeres_con.replace(',','.')
             }
         });
-        
+
+        //CED RENTERÍA
+        renteriaCedData = csv.parse(renteria_ced);
+        renteriaCedData = renteriaCedData.map(function(d) {
+            return {
+                'anio' : d.anio,
+                'hombres_saludable' : +d.hombres_sin.replace(',','.'),
+                'hombres_no_saludable' : +d.hombres_con.replace(',','.'),
+                'mujeres_saludable' : +d.mujeres_sin.replace(',','.'),
+                'mujeres_no_saludable' : +d.mujeres_con.replace(',','.')
+            }
+        });
+
         //Distinción para ECHO
         echoData = csv.parse(echo);
         echoDfleData[0] = { 
@@ -92,10 +107,12 @@ function initData() {
             'mujeres_saludable' : +echoData[1]['mujeres_sin_chrdfle'].replace(',','.')
         }
 
-        console.log(echoDfleData);
-
         //De primeras, mostramos los datos del INE
         initChart();
+
+        setTimeout(() => {
+            setChartCanvas();
+        }, 5000);
     });    
 }
 
@@ -118,9 +135,11 @@ function updateChart(tipo) {
         case 'echo-chrdfle':
             currentData = echoChrdfleData.slice();
             break;
-        case 'renteria':
+        case 'renteria-plos':
             currentData = renteriaData.slice();
             break;
+        case 'renteria-ced':
+            currentData = renteriaCedData.slice();
         default:
             currentData = ineData.slice();
             break;
@@ -133,6 +152,10 @@ function updateChart(tipo) {
     //Disposición de nueva información
     menChart(currentData);
     womenChart(currentData);
+
+    setTimeout(() => {
+        setChartCanvas();
+    }, 5000);
 }
 
 document.getElementById('replay').addEventListener('click', function() {
@@ -205,9 +228,16 @@ function menChart(data) {
         .data(function(d) { return d; })
         .enter()
         .append("rect")
+        .attr('class', function(d) { return 'hombres-' + d.data.anio; })
         .attr("x", function(d) { return xChartMen(d.data.anio) + xChartMen.bandwidth() / 4; })
         .attr("y", function(d) { return yChartMen(0); })
         .attr("width", xChartMen.bandwidth() / 2)
+        .on('mouseover', function(d) {
+            console.log(d);
+        })
+        .on('mouseout', function(d) {
+
+        })
         .transition()
         .duration(1500)
         .attr("y", function(d) { return yChartMen(d[1]); })
@@ -279,16 +309,21 @@ function womenChart(data) {
         .data(function(d) { return d; })
         .enter()
         .append("rect")
+        .attr('class', function(d) { return 'mujeres-' + d.data.anio; })
         .attr("x", function(d) { return xChartWomen(d.data.anio) + xChartWomen.bandwidth() / 4; })
         .attr("y", function(d) { return yChartWomen(0); })
         .attr("width", xChartWomen.bandwidth() / 2)
+        .on('mouseover', function(d) {
+
+        })
+        .on('mouseout', function(d) {
+
+        })
         .transition()
         .duration(1500)
         .attr("y", function(d) { return yChartWomen(d[1]); })
         .attr("height", function(d) { return yChartWomen(d[0]) - yChartWomen(d[1]); });
 }
-
-
 
 ///// REDES SOCIALES /////
 setRRSSLinks();
