@@ -15,14 +15,17 @@ let dataSources = [
     'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/edv_saludable/main/data/renteria_data.csv'];
 let tooltip = d3.select('#tooltip');
 
-let ineData = [], echoData = [], renteriaData = [];
+let ineData = [], echoData = [], echoDfleData = [], echoChrdfleData = [], renteriaData = [], currentData = [];
+let subgrupoHombres = ['hombres_saludable','hombres_no_saludable'];
+let subgrupoMujeres = ['mujeres_saludable','mujeres_no_saludable'];
 let chartMenBlock = d3.select('#chartMen'), chartMen, xChartMen, xAxisChartMen, yChartMen, yAxisChartMen;
 let chartWomenBlock = d3.select('#chartWomen'), chartWomen, xChartWomen, xAxisChartWomen, yChartWomen, yAxisChartWomen;
-let colors = ['','','',''];
+let margin = {top: 4, right: 5, bottom: 17.5, left: 22.5}, width, height;
+let colors = ['#78bb6e','#6f0910'];
 
-initChart();
+initData();
 
-function initChart() {
+function initData() {
     let q = d3.queue();
     let csv = d3.dsvFormat(';');
 
@@ -33,185 +36,260 @@ function initChart() {
     q.await(function(err, ine, echo, renteria) {
         if (err) throw err;
 
+        //INE
         ineData = csv.parse(ine);
-        echoData = csv.parse(echo);
-        renteriaData = csv.parse(renteria);
-    });
-    
-    // d3.text(dataSource, function (error, d) {
-    //     if (error) throw error;
-
-    //     let dsv = d3.dsvFormat(',');
-    //     let data = dsv.parse(d);
-
-    //     data = data.map(function(d){
-    //         return {
-    //             anio: d.periodo,
-    //             ccaa: d.comunidades,
-    //             ccaa_searchable: d.comunidades.replace(/\s/g, '-').replace(/[\(\)\,]/g, '').toLowerCase().substr(3,),
-    //             ex_0: +d.e_0,
-    //             ex_65: +d.ex_6569,
-    //             ex_80: +d.ex_8084
-    //         }           
-    //     });
-
-    //     innerData = data.slice();
-
-    //     //Filtramos los datos de Andalucía por defecto
-    //     let nacData = innerData.filter(function(item){if(item.ccaa_searchable == 'andalucia'){ return item;}});
-    //     currentData = nacData.slice();
-
-    //     //Desarrollo del gráfico > Debemos hacer muchas variables genéricas para luego actualizar el gráfico
-    //     let margin = {top: 5, right: 22.5, bottom: 25, left: 24.5};
-    //     let width = parseInt(chartBlock.style('width')) - margin.left - margin.right,
-    //         height = parseInt(chartBlock.style('height')) - margin.top - margin.bottom;
-
-    //     chart = chartBlock
-    //         .append('svg')
-    //         .lower()
-    //         .attr('width', width + margin.left + margin.right)
-    //         .attr('height', height + margin.top + margin.bottom)
-    //         .append('g')
-    //         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    //     //Eje X
-    //     x_c = d3.scaleLinear()
-    //         .domain([0,25])
-    //         .range([0, width])
-    //         .nice();
-
-    //     x_cAxis = function(g){
-    //         g.call(d3.axisBottom(x_c).ticks(5).tickFormat(function(d) { return numberWithCommas2(d); }))
-    //         g.call(function(g){
-    //             g.selectAll('.tick line')
-    //                 .attr('y1', '0%')
-    //                 .attr('y2', '-' + height + '')
-    //         })
-    //         g.call(function(g){g.select('.domain').remove()});
-    //     }
-
-    //     chart.append("g")
-    //         .attr("transform", "translate(0," + height + ")")
-    //         .attr('class','x_c-axis')
-    //         .call(x_cAxis);
-
-    //     //Eje Y
-    //     y_c = d3.scaleLinear()
-    //         .domain([0,12])
-    //         .range([height,0])
-    //         .nice();
-    
-    //     y_cAxis = function(svg){
-    //         svg.call(d3.axisLeft(y_c).ticks(5).tickFormat(function(d) { return numberWithCommas2(d); }))
-    //         svg.call(function(g){
-    //             g.selectAll('.tick line')
-    //                 .attr('class', function(d,i) {
-    //                     if (d == 0) {
-    //                         return 'line-special';
-    //                     }
-    //                 })
-    //                 .attr("x1", '0')
-    //                 .attr("x2", '' + width + '')
-    //         })
-    //         svg.call(function(g){g.select('.domain').remove()})
-    //     }        
+        ineData = ineData.map(function(d) {
+            return {
+                'anio' : d.anio,
+                'hombres_saludable' : +d.hombres_saludable.replace(',','.'),
+                'hombres_no_saludable' : +d.hombres_total.replace(',','.') - +d.hombres_saludable.replace(',','.'),
+                'mujeres_saludable' : +d.mujeres_saludable.replace(',','.'),
+                'mujeres_no_saludable' : +d.mujeres_total.replace(',','.') - +d.mujeres_saludable.replace(',','.')
+            }
+        });
         
-    //     chart.append("g")
-    //         .attr('class','y_c-axis')
-    //         .call(y_cAxis);
+        //PAPER RENTERÍA
+        renteriaData = csv.parse(renteria);
+        renteriaData = renteriaData.map(function(d) {
+            return {
+                'anio' : d.anio,
+                'hombres_saludable' : +d.hombres_sin.replace(',','.'),
+                'hombres_no_saludable' : +d.hombres_con.replace(',','.'),
+                'mujeres_saludable' : +d.mujeres_sin.replace(',','.'),
+                'mujeres_no_saludable' : +d.mujeres_con.replace(',','.')
+            }
+        });
+        
+        //Distinción para ECHO
+        echoData = csv.parse(echo);
+        echoDfleData[0] = { 
+            'anio' : echoData[0]['anio'], 
+            'hombres_no_saludable' :  +echoData[0]['hombres_con_dfle'].replace(',','.'), 
+            'hombres_saludable' : +echoData[0]['hombres_sin_dfle'].replace(',','.'), 
+            'mujeres_no_saludable' :  +echoData[0]['mujeres_con_dfle'].replace(',','.'), 
+            'mujeres_saludable' : +echoData[0]['mujeres_sin_dfle'].replace(',','.')
+        }
+        echoDfleData[1] = { 
+            'anio' : echoData[1]['anio'], 
+            'hombres_no_saludable' :  +echoData[1]['hombres_con_dfle'].replace(',','.'), 
+            'hombres_saludable' : +echoData[1]['hombres_sin_dfle'].replace(',','.'), 
+            'mujeres_no_saludable' :  +echoData[1]['mujeres_con_dfle'].replace(',','.'), 
+            'mujeres_saludable' : +echoData[1]['mujeres_sin_dfle'].replace(',','.')
+        }
 
-    //     //Línea
-    //     line = d3.line()
-    //         .x(function(d) { return x_c(d.ex_65); })
-    //         .y(function(d) { return y_c(d.ex_80); })
-    //         .curve(d3.curveMonotoneX);
+        echoChrdfleData[0] = { 
+            'anio' : echoData[0]['anio'], 
+            'hombres_no_saludable' :  +echoData[0]['hombres_con_chrdfle'].replace(',','.'), 
+            'hombres_saludable' : +echoData[0]['hombres_sin_chrdfle'].replace(',','.'), 
+            'mujeres_no_saludable' :  +echoData[0]['mujeres_con_chrdfle'].replace(',','.'), 
+            'mujeres_saludable' : +echoData[0]['mujeres_sin_chrdfle'].replace(',','.')
+        }
+        echoChrdfleData[1] = { 
+            'anio' : echoData[1]['anio'], 
+            'hombres_no_saludable' :  +echoData[1]['hombres_con_chrdfle'].replace(',','.'), 
+            'hombres_saludable' : +echoData[1]['hombres_sin_chrdfle'].replace(',','.'), 
+            'mujeres_no_saludable' :  +echoData[1]['mujeres_con_chrdfle'].replace(',','.'), 
+            'mujeres_saludable' : +echoData[1]['mujeres_sin_chrdfle'].replace(',','.')
+        }
 
-    //     path_1 = chart.append("path")
-    //         .data([currentData])
-    //         .attr("class", 'line-chart_1')
-    //         .attr("fill", "none")
-    //         .attr("stroke", '' + enr_color_1 + '')
-    //         .attr("stroke-width", '1.5px')
-    //         .attr("d", line);
+        console.log(echoDfleData);
 
-    //     length_1 = path_1.node().getTotalLength();
+        //De primeras, mostramos los datos del INE
+        initChart();
+    });    
+}
 
-    //     path_1.attr("stroke-dasharray", length_1 + " " + length_1)
-    //         .attr("stroke-dashoffset", length_1)
-    //         .transition()
-    //         .ease(d3.easeLinear)
-    //         .attr("stroke-dashoffset", 0)
-    //         .duration(3000);
+function initChart() {
+    width = parseInt(chartMenBlock.style('width')) - margin.left - margin.right - 5;
+    height = parseInt(chartMenBlock.style('height')) - margin.top - margin.bottom;
 
-    //     chart.selectAll('circles')
-    //         .data(currentData)
-    //         .enter()
-    //         .append('circle')
-    //         .attr('class', 'circle-chart_2_1')
-    //         .attr("r", function(d,i){
-    //             if(i == 0 || i == currentData.length -1) {
-    //                 return '5'
-    //             } else {
-    //                 return '2.5';
-    //             }
-    //         })
-    //         .attr("cx", function(d) { return x_c(d.ex_65); })
-    //         .attr("cy", function(d) { return y_c(d.ex_80); })
-    //         .style("fill", function(d,i) { 
-    //             if(i == 0) {
-    //                 return '' + circle_color_1 + '';
-    //             } else if (i == currentData.length - 1) {
-    //                 return '' + circle_color_2 + '';
-    //             } else {
-    //                 return '#fff';
-    //             }
-    //         })
-    //         .style("stroke", function(d,i) {
-    //             if(i == 0 || i == currentData.length -1) {
-    //                 return 'none'
-    //             } else {
-    //                 return '' + enr_color_1 + '';
-    //             }
-    //         })
-    //         .style("stroke-width", function(d,i) {
-    //             if(i == 0 || i == currentData.length -1) {
-    //                 return '0'
-    //             } else {
-    //                 return '0.5';
-    //             }
-    //         })
-    //         .style('opacity', '0')
-    //         .on('mouseenter mousedown mousemove mouseover', function(d, i, e) {                
-    //             //Texto
-    //             let html = '<p class="chart__tooltip--title">' + d.ccaa + ' (' + d.anio + ')</p>' + '<p class="chart__tooltip--text">Esperanza de vida a los 65-69 años:' + numberWithCommas(d.ex_65.toFixed(1)) + ' años</p>' + '<p class="chart__tooltip--text">Esperanza de vida a los 80-84 años:' + numberWithCommas(d.ex_80.toFixed(1)) + '</p>';
-
-    //             tooltip.html(html);
-
-    //             //Tooltip
-    //             positionTooltip(window.event, tooltip);
-    //             getInTooltip(tooltip);               
-    //         })
-    //         .on('mouseout', function(d, i, e) {
-    //             //Quitamos el tooltip
-    //             getOutTooltip(tooltip);                
-    //         })
-    //         .transition()
-    //         .delay(function(d,i) { return i * (3000 / currentData.length - 1)})
-    //         .style('opacity', '1');
-
-    //     setTimeout(() => {
-    //         setChartCanvas(); 
-    //     }, 4000);
-    // });
+    menChart(ineData);
+    womenChart(ineData);   
 }
 
 function updateChart(tipo) {
+    switch(tipo) {
+        case 'ine':
+            currentData = ineData.slice();
+            break;
+        case 'echo-dfle':
+            currentData = echoDfleData.slice();
+            break;
+        case 'echo-chrdfle':
+            currentData = echoChrdfleData.slice();
+            break;
+        case 'renteria':
+            currentData = renteriaData.slice();
+            break;
+        default:
+            currentData = ineData.slice();
+            break;
+    }
 
+    //Borrado previo
+    chartMenBlock.selectAll('*').remove();
+    chartWomenBlock.selectAll('*').remove();
+
+    //Disposición de nueva información
+    menChart(currentData);
+    womenChart(currentData);
 }
 
 document.getElementById('replay').addEventListener('click', function() {
     updateChart(currentSelected);
 });
+
+//Helpers en visualización
+function menChart(data) {
+    ////// HOMBRES //////
+    chartMen = chartMenBlock
+        .append('svg')
+        .lower()
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    //Eje X
+    xChartMen = d3.scaleBand()
+        .domain(data.map(function(d) { return d.anio; }))
+        .range([0, width]);
+
+    xAxisChartMen = function(g) {
+        g.call(d3.axisBottom(xChartMen).tickValues(xChartMen.domain().filter(function(d,i){
+            if(currentSelected == 'ine') {
+                return !(i%3);
+            } else {
+                return !(i%1);
+            }            
+        })))
+        //g.call(function(g){g.select('.domain').remove()});
+    }
+
+    chartMen.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxisChartMen);
+
+    //Eje Y
+    yChartMen = d3.scaleLinear()
+        .domain([0,25])
+        .range([height, 0]);
+
+    yAxisChartMen = function(g) {
+        g.call(d3.axisLeft(yChartMen).ticks(5));
+    }
+
+    chartMen.append("g")
+        .call(yAxisChartMen);
+
+    //SUBBLOQUES ANUALES
+    let stackedMenData = d3.stack()
+        .keys(subgrupoHombres)
+        (data);
+
+    chartMen.append("g")
+        .selectAll("g")
+        // Enter in the stack data = loop key per key = group per group
+        .data(stackedMenData)
+        .enter()
+        .append("g")
+        .attr("fill", function(d) {
+            if(d.index == 0) {
+                return colors[0];
+            } else {
+                return colors[1];
+            }
+        })
+        .selectAll("rect")
+        // enter a second time = loop subgroup per subgroup to add all rectangles
+        .data(function(d) { return d; })
+        .enter()
+        .append("rect")
+        .attr("x", function(d) { return xChartMen(d.data.anio) + xChartMen.bandwidth() / 4; })
+        .attr("y", function(d) { return yChartMen(0); })
+        .attr("width", xChartMen.bandwidth() / 2)
+        .transition()
+        .duration(1500)
+        .attr("y", function(d) { return yChartMen(d[1]); })
+        .attr("height", function(d) { return yChartMen(d[0]) - yChartMen(d[1]); });
+}
+
+function womenChart(data) {
+    ////// MUJERES //////
+    chartWomen = chartWomenBlock
+        .append('svg')
+        .lower()
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    //Eje X
+    xChartWomen = d3.scaleBand()
+        .domain(data.map(function(d) { return d.anio; }))
+        .range([0, width]);
+
+    xAxisChartWomen = function(g) {
+        g.call(d3.axisBottom(xChartWomen).tickValues(xChartWomen.domain().filter(function(d,i){
+            if(currentSelected == 'ine') {
+                return !(i%3);
+            } else {
+                return !(i%1);
+            }
+        })))
+        //g.call(function(g){g.select('.domain').remove()});
+    }
+
+    chartWomen.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxisChartWomen);
+
+    //Eje Y
+    yChartWomen = d3.scaleLinear()
+        .domain([0,25])
+        .range([height, 0]);
+
+    yAxisChartWomen = function(g) {
+        g.call(d3.axisLeft(yChartWomen).ticks(5));
+    }
+
+    chartWomen.append("g")
+        .call(yAxisChartWomen);
+
+    //Datos
+    let stackedWomenData = d3.stack()
+        .keys(subgrupoMujeres)
+        (data);
+
+    chartWomen.append("g")
+        .selectAll("g")
+        // Enter in the stack data = loop key per key = group per group
+        .data(stackedWomenData)
+        .enter()
+        .append("g")
+        .attr("fill", function(d) {
+            if(d.index == 0) {
+                return colors[0];
+            } else {
+                return colors[1];
+            }
+        })
+        .selectAll("rect")
+        // enter a second time = loop subgroup per subgroup to add all rectangles
+        .data(function(d) { return d; })
+        .enter()
+        .append("rect")
+        .attr("x", function(d) { return xChartWomen(d.data.anio) + xChartWomen.bandwidth() / 4; })
+        .attr("y", function(d) { return yChartWomen(0); })
+        .attr("width", xChartWomen.bandwidth() / 2)
+        .transition()
+        .duration(1500)
+        .attr("y", function(d) { return yChartWomen(d[1]); })
+        .attr("height", function(d) { return yChartWomen(d[0]) - yChartWomen(d[1]); });
+}
+
+
+
 ///// REDES SOCIALES /////
 setRRSSLinks();
 
