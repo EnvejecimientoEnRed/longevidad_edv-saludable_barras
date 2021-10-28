@@ -239,7 +239,7 @@ function menChart(data) {
             let html = `<p class="chart__tooltip--title">${d.data.anio}</p>
                 <p class="chart__tooltip--text">EdV total: ${total.toFixed(1).replace('.',',')} años</p>
                 <p class="chart__tooltip--text">EdV en buena salud: ${d.data.hombres_saludable.toFixed(1).replace('.',',')} años</p>
-                <p class="chart__tooltip--text">EdV en mala salud: ${d.data.hombres_no_saludable.toFixed(1).replace('.',',')} años</p>`;
+                <p class="chart__tooltip--text">EdV con discapacidad y/o enfermedades: ${d.data.hombres_no_saludable.toFixed(1).replace('.',',')} años</p>`;
 
             tooltip.html(html);
 
@@ -350,7 +350,7 @@ function womenChart(data) {
             let html = `<p class="chart__tooltip--title">${d.data.anio}</p>
                 <p class="chart__tooltip--text">EdV total: ${total.toFixed(1).replace('.',',')} años</p>
                 <p class="chart__tooltip--text">EdV en buena salud: ${d.data.mujeres_saludable.toFixed(1).replace('.',',')} años</p>
-                <p class="chart__tooltip--text">EdV en mala salud: ${d.data.mujeres_no_saludable.toFixed(1).replace('.',',')} años</p>`;
+                <p class="chart__tooltip--text">EdV con discapacidad y/o enfermedades: ${d.data.mujeres_no_saludable.toFixed(1).replace('.',',')} años</p>`;
 
             tooltip.html(html);
 

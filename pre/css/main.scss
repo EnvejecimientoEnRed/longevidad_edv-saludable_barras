@@ -239,7 +239,7 @@ body, button {
                     background-color: #78bb6e;
                 }
                 &.second::before {
-                    background-color: #6f0910;
+                    background: linear-gradient(to right, #78bb6e 0%, #78bb6e 50%, #6f0910 50%, #6f0910 100%);
                 }
                 
             }
@@ -363,6 +363,9 @@ body, button {
         font-weight: 700;
         margin-bottom: 8px;
     }
+    &__subheader {
+        
+    }
     &__paragraph {
         font-size: 0.9em;
         line-height: 1.25em;
@@ -468,7 +471,7 @@ body, button {
     opacity: 0;   
 
     width: auto;
-    max-width: 135px;
+    max-width: 180px;
     height: auto;
     padding: 8px;
     background-color: #F4F4F4;
