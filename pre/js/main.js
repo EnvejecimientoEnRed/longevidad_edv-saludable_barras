@@ -1,7 +1,6 @@
 import html2canvas from 'html2canvas';
 import { getInTooltip, getOutTooltip, positionTooltip } from './tooltip';
 import { setRRSSLinks } from './rrss';
-import { numberWithCommas, numberWithCommas2 } from './helpers';
 import 'url-search-params-polyfill';
 import * as d3 from 'd3';
 
@@ -10,10 +9,10 @@ import '../css/main.scss';
 
 ///// VISUALIZACIÓN DEL GRÁFICO //////
 let dataSources = [
-    'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/edv_saludable/main/data/ine_data.csv', 
-    'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/edv_saludable/main/data/echo_data.csv', 
-    'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/edv_saludable/main/data/renteria_data.csv',
-    'https://raw.githubusercontent.com/CarlosMunozDiazCSIC/edv_saludable/main/data/renteria-ced_data.csv'
+    'https://raw.githubusercontent.com/EnvejecimientoEnRed/longevidad_edv-saludable_barras/main/data/ine_data.csv', 
+    'https://raw.githubusercontent.com/EnvejecimientoEnRed/longevidad_edv-saludable_barras/main/data/echo_data.csv', 
+    'https://raw.githubusercontent.com/EnvejecimientoEnRed/longevidad_edv-saludable_barras/main/data/renteria_data.csv',
+    'https://raw.githubusercontent.com/EnvejecimientoEnRed/longevidad_edv-saludable_barras/main/data/renteria-ced_data.csv'
 ];
 let tooltip = d3.select('#tooltip');
 
@@ -437,7 +436,7 @@ function setChartCanvasImage() {
     // Create a link
     var aDownloadLink = document.createElement('a');
     // Add the name of the file to the link
-    aDownloadLink.download = 'edv_saludable.png';
+    aDownloadLink.download = 'longevidad_edv_saludable.png';
     // Attach the data to the link
     aDownloadLink.href = image;
     // Get the code to click the download link
